@@ -44,7 +44,6 @@ public class ShutdownForm : Form
     int menuClosedAt = -10000;             // 菜单刚关闭的时间戳，防点 ▼ 收起后瞬间重开
     Timer countdown;                       // 定时关机倒计时（1s tick）
     DateTime target;                       // 计划触发时刻
-    string scheduledText = "";             // 「15 分钟后」等文案
     Label lblState;
     Image sakiko;                          // Q版丰川祥子贴纸（嵌入资源）
     System.IO.Stream sakikoStream, voiceStream; // Image 依赖流存活，须保持引用
@@ -265,10 +264,9 @@ public class ShutdownForm : Form
         }
         scheduled = true;
         confirmed = true;
-        scheduledText = text;
         target = DateTime.Now.AddSeconds(secs);
+        lblState.Text = CountText(target - DateTime.Now);   // 立即反馈，不等首个 tick
         StartCountdown();
-        lblState.Text = "已定时 " + text + "关机 · 点 ▼ 可取消";
     }
 
     void CancelSchedule()
@@ -280,6 +278,13 @@ public class ShutdownForm : Form
         lblState.Text = "已取消定时关机（shutdown /a）";
     }
 
+    // 氛围文案：只报剩余时间，别的不说
+    static string CountText(TimeSpan left)
+    {
+        var fmt = left.TotalHours >= 1 ? @"hh\:mm\:ss" : @"mm\:ss";
+        return "距忘却还剩 " + left.ToString(fmt);
+    }
+
     void StartCountdown()
     {
         StopCountdown();
@@ -288,8 +293,7 @@ public class ShutdownForm : Form
         {
             var left = target - DateTime.Now;
             if (left <= TimeSpan.Zero) return;   // 到点由系统接管执行，界面倒计时自然结束
-            var fmt = left.TotalHours >= 1 ? @"hh\:mm\:ss" : @"mm\:ss";
-            lblState.Text = "已定时" + scheduledText + "关机 · 距忘却还剩 " + left.ToString(fmt) + "（点 ▼ 可取消）";
+            lblState.Text = CountText(left);
         };
         countdown.Start();
     }
