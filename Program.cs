@@ -43,6 +43,7 @@ public class ShutdownForm : Form
     bool dropdown = true, arrowHit;        // 忘却钮右半 ▼ 下拉区
     int menuClosedAt = -10000;             // 菜单刚关闭的时间戳，防点 ▼ 收起后瞬间重开
     Timer countdown;                       // 定时关机倒计时（1s tick）
+    Timer stateTimer;                      // 瞬时状态文案：10s 后自动消失
     DateTime target;                       // 计划触发时刻
     Label lblState;
     Image sakiko;                          // Q版丰川祥子贴纸（嵌入资源）
@@ -95,6 +96,12 @@ public class ShutdownForm : Form
         lblState = Label("", 9f, FontStyle.Regular, ColCyan, 28, 288);
         lblState.TextAlign = ContentAlignment.MiddleCenter;
         lblState.Size = new Size(364, 20);
+        stateTimer = new Timer { Interval = 10000 };
+        stateTimer.Tick += delegate
+        {
+            stateTimer.Stop();
+            lblState.Text = "";
+        };
 
         var cancel = Ghost("再等等", 28, 1, ColInk, ColBtnLn);
         cancel.Click += delegate { Close(); };
@@ -186,18 +193,33 @@ public class ShutdownForm : Form
         return b;
     }
 
-    // 投出立即类命令：仅在成功发出后锁定；失败保持界面可用并提示
+    // 投出立即类命令：仅在成功发出后锁定；失败保持界面可用并提示（常驻不消失）
     bool FireShutdown(string args, string okState)
     {
         if (confirmed) return false;
         if (!RunShutdown(args))
         {
-            lblState.Text = "执行失败：无法调用系统关机命令";
+            StickyText("执行失败：无法调用系统关机命令");
             return false;
         }
         confirmed = true;
-        lblState.Text = okState;
+        StateText(okState);
         return true;
+    }
+
+    // 瞬时状态：显示 10 秒后自动消失，不常驻影响观看
+    void StateText(string text)
+    {
+        stateTimer.Stop();
+        lblState.Text = text;
+        stateTimer.Start();
+    }
+
+    // 常驻状态：错误信息不自动消失，保持可读
+    void StickyText(string text)
+    {
+        stateTimer.Stop();
+        lblState.Text = text;
     }
 
     // 覆盖式投递：先取消在途计划（无在途计划时的 1116 错误忽略），等其退出后再投新命令，
@@ -259,12 +281,13 @@ public class ShutdownForm : Form
     {
         if (!ReplaceShutdown("/s /t " + secs))
         {
-            lblState.Text = "执行失败：无法投递定时关机";
+            StickyText("执行失败：无法投递定时关机");
             return;
         }
         scheduled = true;
         confirmed = true;
         target = DateTime.Now.AddSeconds(secs);
+        stateTimer.Stop();                       // 倒计时接管状态栏，停掉瞬时清除
         lblState.Text = CountText(target - DateTime.Now);   // 立即反馈，不等首个 tick
         StartCountdown();
     }
@@ -275,7 +298,7 @@ public class ShutdownForm : Form
         scheduled = false;
         confirmed = false;   // 解锁各按钮，可重新选择
         StopCountdown();
-        lblState.Text = "已取消定时关机（shutdown /a）";
+        StateText("回想.....");
     }
 
     // 氛围文案：只报剩余时间，别的不说
