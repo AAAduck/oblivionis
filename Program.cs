@@ -230,6 +230,14 @@ public class ShutdownForm : Form
         stateTimer.Start();
     }
 
+    // 到点后退场动画：渐隐约 0.4s 再清空，比瞬间消失柔和
+    void StartFade()
+    {
+        stateTimer.Stop();
+        fadeStep = 0f;
+        fadeTimer.Start();
+    }
+
     // 常驻状态：错误信息不自动消失，保持可读
     void StickyText(string text)
     {
