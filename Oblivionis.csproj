@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>Oblivionis</AssemblyName>
+    <AssemblyTitle>Oblivionis</AssemblyTitle>
+    <Product>Oblivionis</Product>
+    <Version>1.1.0</Version>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>assets\app.ico</ApplicationIcon>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <!-- Q版丰川祥子贴纸（嵌入资源） -->
+  <ItemGroup>
+    <EmbeddedResource Include="assets\sakiko.png">
+      <LogicalName>sakiko.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="assets\cn019.wav">
+      <LogicalName>cn019.wav</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>
