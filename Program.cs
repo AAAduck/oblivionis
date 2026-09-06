@@ -43,7 +43,9 @@ public class ShutdownForm : Form
     bool dropdown = true, arrowHit;        // 忘却钮右半 ▼ 下拉区
     int menuClosedAt = -10000;             // 菜单刚关闭的时间戳，防点 ▼ 收起后瞬间重开
     Timer countdown;                       // 定时关机倒计时（1s tick）
-    Timer stateTimer;                      // 瞬时状态文案：10s 后自动消失
+    Timer stateTimer;                      // 瞬时状态文案：10s 后开始退场
+    Timer fadeTimer;                       // 退场渐隐（40ms tick）
+    float fadeStep;                        // 渐隐进度 0→1
     DateTime target;                       // 计划触发时刻
     Label lblState;
     Image sakiko;                          // Q版丰川祥子贴纸（嵌入资源）
@@ -97,10 +99,20 @@ public class ShutdownForm : Form
         lblState.TextAlign = ContentAlignment.MiddleCenter;
         lblState.Size = new Size(364, 20);
         stateTimer = new Timer { Interval = 10000 };
-        stateTimer.Tick += delegate
+        stateTimer.Tick += delegate { StartFade(); };
+        fadeTimer = new Timer { Interval = 40 };
+        fadeTimer.Tick += delegate
         {
-            stateTimer.Stop();
-            lblState.Text = "";
+            fadeStep += 0.15f;
+            if (fadeStep >= 1f)
+            {
+                fadeTimer.Stop();
+                fadeStep = 0f;
+                lblState.ForeColor = ColCyan;
+                lblState.Text = "";
+                return;
+            }
+            lblState.ForeColor = Blend(ColCyan, ColBg1, fadeStep);
         };
 
         var cancel = Ghost("再等等", 28, 1, ColInk, ColBtnLn);
@@ -207,20 +219,32 @@ public class ShutdownForm : Form
         return true;
     }
 
-    // 瞬时状态：显示 10 秒后自动消失，不常驻影响观看
+    // 瞬时状态：显示 10 秒后渐隐退场，不常驻影响观看
     void StateText(string text)
     {
-        stateTimer.Stop();
+        fadeTimer.Stop();
+        fadeStep = 0f;
+        lblState.ForeColor = ColCyan;
         lblState.Text = text;
+        stateTimer.Stop();
         stateTimer.Start();
     }
 
     // 常驻状态：错误信息不自动消失，保持可读
     void StickyText(string text)
     {
+        fadeTimer.Stop();
         stateTimer.Stop();
+        fadeStep = 0f;
+        lblState.ForeColor = ColCyan;
         lblState.Text = text;
     }
+
+    static Color Blend(Color a, Color b, float t) =>
+        Color.FromArgb(
+            (int)(a.R + (b.R - a.R) * t),
+            (int)(a.G + (b.G - a.G) * t),
+            (int)(a.B + (b.B - a.B) * t));
 
     // 覆盖式投递：先取消在途计划（无在途计划时的 1116 错误忽略），等其退出后再投新命令，
     // 避免新计划刚发出就被在途的 /a 取消
