@@ -61,3 +61,18 @@ cd "/d/桌面/oblivionis" && ./build.sh
 - 框架依赖单文件发布，运行需本机已装 .NET 8 桌面运行时
 - 更换贴纸/语音：替换 `assets/` 下同名文件后重新编译即可（勿改 LogicalName）
 - 关机/重启均无撤销，请先保存工作
+
+## 许可证
+
+源码（`Program.cs`、`Oblivionis.csproj`、`build.sh`）以 **MIT 许可证**分发，见 [LICENSE](LICENSE)。
+
+`assets/` 目录下的素材**不在 MIT 授权范围内**，其版权归各自权利人所有：
+
+| 文件 | 说明 |
+| --- | --- |
+| `assets/sakiko.png` | 角色贴纸，版权归《BanG Dream!》系列相关权利人（Bushiroad / Craft Egg 等） |
+| `assets/cn019.wav` | 角色语音彩蛋，版权归上述权利人 |
+| `assets/app.ico` | 由上述贴图衍生的程序图标 |
+
+上述素材仅作为**作者个人非商业用途**的彩蛋资源随源码存放，**请勿再分发、商用或用于任何正式场合**。
+若要重新分发本项目，请先移除或替换 `assets/` 为你自己拥有权利的素材。
